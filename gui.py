@@ -1,43 +1,110 @@
 import tkinter as tk
+from datetime import datetime
+
+def collect_transaction():
+    amount_text = amount_entry.get().strip()
+
+
+    try:
+        amount = float(amount_text)
+        if amount <= 0:
+            raise ValueError
+    except ValueError:
+        print("Enter an amount greater than zero.")
+        return
+
+    date_text = date_entry.get().strip()
+    
+    try:
+        transaction_date = datetime.strptime(date_text, "%Y-%m-%d").date()
+    except ValueError:
+        print("Enter a valid date in YYYY-MM-DD format.")
+        return
+    
+    transaction = {
+        "type": type_var.get(),
+        "amount": amount,
+        "description": description_entry.get().strip(),
+        "date": transaction_date.isoformat()
+    }
+    
+    print(transaction)
 
 root = tk.Tk()
 root.title("Personal Expense Tracker")
 root.geometry("800x500")
+root.resizable(False, False)
+root.configure(bg="#F3F6F4")
 
 heading = tk.Label(
     root,
     text="Personal Expense Tracker by Leo",
-    font=("Arial", 15, "bold")
+    font=("Arial", 18, "bold"),
+    bg="#F3F6F4",
+    fg="#23352D",
 )
-heading.pack(pady=20)
+heading.pack(pady=(28, 12))
 
 balance_label = tk.Label(
     root,
-    text="Current Balance: ₱0.00",
-    font=("Arial", 10)
+    text="Current Balance: \u20b10.00",
+    font=("Arial", 16, "bold"),
+    bg="#F3F6F4",
+    fg="#287A55",
 )
-balance_label.pack(pady=10)
+balance_label.pack(pady=12)
 
-form = tk.Frame(root)
-form.pack(pady=10)
+form = tk.Frame(root, bg="#FFFFFF", padx=24, pady=20)
+form.pack(pady=16)
 
-tk.Label(form, text="Type: ").grid(
-    row=0, column=0
+tk.Label(
+    form, text="Type:", font=("Arial", 11),
+    bg="#FFFFFF", fg="#23352D",
+).grid(row=0, column=0, sticky="w", padx=8, pady=8)
+
+type_var = tk.StringVar(value="expense")
+
+type_menu = tk.OptionMenu(form, type_var, "allowance", "expense")
+type_menu.grid(row=0, column=1, padx=8, pady=8)
+
+tk.Label(
+    form, text="Amount:", font=("Arial", 11),
+    bg="#FFFFFF", fg="#23352D",
+).grid(row=1, column=0, sticky="w", padx=8, pady=8)
+
+amount_entry = tk.Entry(form, font=("Arial", 11), width=28)
+amount_entry.grid(row=1, column=1, padx=8, pady=8)
+
+tk.Label(
+    form, text="Description:", font=("Arial", 11),
+    bg="#FFFFFF", fg="#23352D",
+).grid(row=2, column=0, sticky="w", padx=8, pady=8)
+
+description_entry = tk.Entry(form, font=("Arial", 11), width=28)
+description_entry.grid(row=2, column=1, padx=8, pady=8)
+
+tk.Label(
+    form, text="Date (YYYY-MM-DD):", font=("Arial", 11),
+    bg="#FFFFFF", fg="#23352D",
+).grid(row=3, column=0, sticky="w", padx=8, pady=8)
+
+date_entry = tk.Entry(form, font=("Arial", 11), width=28)
+date_entry.grid(row=3, column=1, padx=8, pady=8)
+
+add_button = tk.Button(
+    form,
+    text="Add transaction",
+    command=collect_transaction,
+    font=("Arial", 11, "bold"),
+    bg="#287A55",
+    fg="#FFFFFF",
+    activebackground="#1F6344",
+    activeforeground="#FFFFFF",
+    relief="flat",
+    padx=14,
+    pady=7,
+    cursor="hand2",
 )
-
-type_entry = tk.Entry(form)
-type_entry.grid(
-    row=0, column=1
-)
-
-tk.Label(form, text="Amount: ").grid(
-    row=1, column=0
-)
-
-amount_entry = tk.Entry(form)
-amount_entry.grid(
-    row=1, column=1
-)
-
+add_button.grid(row=4, column=0, columnspan=2, pady=(16, 4))
 
 root.mainloop()
