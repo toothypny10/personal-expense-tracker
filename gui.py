@@ -1,5 +1,6 @@
 import tkinter as tk
 from datetime import datetime
+from main import load_transaction, save_transaction, calculate_balance
 
 def collect_transaction():
     amount_text = amount_entry.get().strip()
@@ -27,18 +28,31 @@ def collect_transaction():
         "description": description_entry.get().strip(),
         "date": transaction_date.isoformat()
     }
-    
-    print(transaction)
 
+    transactions = load_transaction()
+    transactions.append(transaction)
+    save_transaction(transactions)
+
+    balance = calculate_balance(transactions)
+    balance_label.config(text=f"Current Balance: \u20b1{balance:.2f}")
+
+    amount_entry.delete(0, tk.END)
+    description_entry.delete(0, tk.END)
+    date_entry.delete(0, tk.END)
+    type_var.set("Expense")
+    
+    
 root = tk.Tk()
 root.title("Personal Expense Tracker")
 root.geometry("800x500")
 root.resizable(False, False)
 root.configure(bg="#F3F6F4")
 
+transactions = load_transaction()
+
 heading = tk.Label(
     root,
-    text="Personal Expense Tracker by Leo",
+    text="EXpnse",
     font=("Arial", 18, "bold"),
     bg="#F3F6F4",
     fg="#23352D",
@@ -47,7 +61,7 @@ heading.pack(pady=(28, 12))
 
 balance_label = tk.Label(
     root,
-    text="Current Balance: \u20b10.00",
+    text=f"Current Balance: \u20b1{calculate_balance(transactions):.2f}",
     font=("Arial", 16, "bold"),
     bg="#F3F6F4",
     fg="#287A55",
@@ -62,9 +76,9 @@ tk.Label(
     bg="#FFFFFF", fg="#23352D",
 ).grid(row=0, column=0, sticky="w", padx=8, pady=8)
 
-type_var = tk.StringVar(value="expense")
+type_var = tk.StringVar(value="Expense")
 
-type_menu = tk.OptionMenu(form, type_var, "allowance", "expense")
+type_menu = tk.OptionMenu(form, type_var, "Allowance", "Expense")
 type_menu.grid(row=0, column=1, padx=8, pady=8)
 
 tk.Label(

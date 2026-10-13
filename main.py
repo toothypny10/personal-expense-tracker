@@ -19,12 +19,13 @@ def save_transaction(transactions): # load_transaction() either gives [] or tran
 def calculate_balance(transactions): # load_transaction() either gives [] or transactions
     allowance = sum(
         item["amount"] for item in transactions
-        if item["type"] == "allowance"
+        if item["type"].lower() == "allowance"
     )
     expenses = sum(
         item["amount"] for item in transactions
-        if item["type"] == "expense"
+        if item["type"].lower() == "expense"
     )
+    
     return allowance - expenses
 
 
