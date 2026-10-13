@@ -4,22 +4,27 @@ from main import load_transaction, save_transaction, calculate_balance
 
 def collect_transaction():
     amount_text = amount_entry.get().strip()
-
-
     try:
         amount = float(amount_text)
         if amount <= 0:
             raise ValueError
     except ValueError:
-        print("Enter an amount greater than zero.")
+        status_label.config(
+            text="Please enter an amount greater than zero.", 
+            fg="#B42318"
+        )
         return
 
     date_text = date_entry.get().strip()
     
     try:
         transaction_date = datetime.strptime(date_text, "%Y-%m-%d").date()
+
     except ValueError:
-        print("Enter a valid date in YYYY-MM-DD format.")
+        status_label.config(
+            text="Enter a valid date in YYYY-MM-DD format.",
+            fg="#B42318"
+        )
         return
     
     transaction = {
@@ -32,6 +37,11 @@ def collect_transaction():
     transactions = load_transaction()
     transactions.append(transaction)
     save_transaction(transactions)
+
+    status_label.config(
+        text="Transaction added.", 
+        fg="#287A55"
+    )
 
     balance = calculate_balance(transactions)
     balance_label.config(text=f"Current Balance: \u20b1{balance:.2f}")
@@ -120,5 +130,13 @@ add_button = tk.Button(
     cursor="hand2",
 )
 add_button.grid(row=4, column=0, columnspan=2, pady=(16, 4))
+
+status_label = tk.Label(
+    form,
+    text="",
+    font=("Arial", 10),
+    bg="#FFFFFF",
+)
+status_label.grid(row=5, column=0, columnspan=2, pady=(4, 0))
 
 root.mainloop()
