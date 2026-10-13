@@ -1,6 +1,8 @@
 import tkinter as tk
+from tkinter import ttk
 from datetime import datetime
 from main import load_transaction, save_transaction, calculate_balance
+
 
 def collect_transaction():
     amount_text = amount_entry.get().strip()
@@ -37,6 +39,7 @@ def collect_transaction():
     transactions = load_transaction()
     transactions.append(transaction)
     save_transaction(transactions)
+    refresh_history_table()
 
     status_label.config(
         text="Transaction added.", 
@@ -50,15 +53,31 @@ def collect_transaction():
     description_entry.delete(0, tk.END)
     date_entry.delete(0, tk.END)
     type_var.set("Expense")
-    
-    
+
+def refresh_history_table():
+    for row_id in history_table.get_children():
+        history_table.delete(row_id)
+
+    for transaction in load_transaction():
+        history_table.insert(
+            "",
+            tk.END,
+            values=(
+                transaction["date"],
+                transaction["type"],
+                transaction["description"],
+                f"\u20b1{transaction['amount']:.2f}",
+            ),
+        )
+
 root = tk.Tk()
 root.title("Personal Expense Tracker")
-root.geometry("800x500")
+root.geometry("1000x750")
 root.resizable(False, False)
 root.configure(bg="#F3F6F4")
 
 transactions = load_transaction()
+
 
 heading = tk.Label(
     root,
@@ -139,4 +158,25 @@ status_label = tk.Label(
 )
 status_label.grid(row=5, column=0, columnspan=2, pady=(4, 0))
 
+# Transaction History 
+history_table = ttk.Treeview(
+    root,
+    columns=("date", "type", "description", "amount"),
+    show="headings",
+    height=8,
+)
+
+history_table.heading("date", text="Date")
+history_table.heading("type", text="Type")
+history_table.heading("description", text="Description")
+history_table.heading("amount", text="Amount")
+
+history_table.column("date", width=110)
+history_table.column("type", width=100)
+history_table.column("description", width=350)
+history_table.column("amount", width=120, anchor="e")
+
+history_table.pack(padx=24, pady=12, fill="x")
+
+refresh_history_table()
 root.mainloop()

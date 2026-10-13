@@ -6,6 +6,7 @@ JSON_PATH = PROGRAM_DIRECTORY / "data.json"
 
 def load_transaction(): # goes into save_transaction(here) and calculate_balance(here)
     if not JSON_PATH.exists():
+        save_transaction([])
         return []
 
     with open(JSON_PATH, "r", encoding="utf-8") as file:
