@@ -77,7 +77,7 @@ root.configure(bg="#F3F6F4")
 
 transactions = load_transaction()
 
-# Static Tab
+# Static Tab / Header
 heading = tk.Label(
     root,
     text="EXpnse",
