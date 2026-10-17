@@ -27,15 +27,20 @@ def collect_transaction():
             fg="#B42318"
         )
         return
+
+    transactions = load_transaction()
+
+    existing_id = [item["id"] for item in transactions]
+    next_id = max(existing_id, default=0) + 1
     
     transaction = {
         "type": type_var.get(),
         "amount": amount,
         "description": description_entry.get().strip(),
-        "date": transaction_date.isoformat()
+        "date": transaction_date.isoformat(),
+        "id": next_id,
     }
 
-    transactions = load_transaction()
     transactions.append(transaction)
     save_transaction(transactions)
     refresh_history_table()

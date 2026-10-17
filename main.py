@@ -14,6 +14,9 @@ def load_transaction(): # goes into save_transaction(here) and calculate_balance
         if not isinstance(transactions, list):
             raise ValueError("data.json must contain list of transaction.")
 
+        if not transactions:
+            return transactions
+
         ids_added = False
         required_fields = {"type", "amount", "description", "date"}
 
@@ -21,16 +24,17 @@ def load_transaction(): # goes into save_transaction(here) and calculate_balance
             if not isinstance(transaction, dict):
                 raise ValueError(f"Transaction {number} must be a dictionary.")
 
-            if "id" not in transaction:
+            if not required_fields.issubset(transaction):
+                error_id = transaction.get("id", number)
+                raise ValueError(f"Transaction {error_id} is missing required fields.")
+
+            if "id" not in transaction or transaction.get("id") != number:
                 transaction["id"] = number
                 ids_added = True
-                
-            if not required_fields.issubset(transaction):
-                raise ValueError(f"Transaction {number} is missing required fields.")
-
+    
         if ids_added:
-            save_transaction(transactions)
-            
+                    save_transaction(transactions)
+
         return transactions
 
 def save_transaction(transactions): # load_transaction() either gives [] or transactions
