@@ -33,7 +33,7 @@ def load_transaction(): # goes into save_transaction(here) and calculate_balance
                 ids_added = True
     
         if ids_added:
-                    save_transaction(transactions)
+            save_transaction(transactions)
 
         return transactions
 
