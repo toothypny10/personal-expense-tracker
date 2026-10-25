@@ -1,7 +1,7 @@
 import customtkinter as ctk
 import tkinter as tk
 from tkinter import ttk
-from main import load_transaction, save_transaction, calculate_balance
+from main import load_transaction, save_transaction, calculate_balance, calculate_allowance, calculate_expenses
 import math
 from datetime import date, datetime
 
@@ -12,9 +12,9 @@ def collect_transaction():
         if not math.isfinite(amount) or amount <= 0:
             raise ValueError
     except ValueError:
-        status_label.config(
+        status_label.configure(
             text="Enter a finite amount greater than zero.", 
-            fg="#B42318"
+            text_color="#B42318"
         )
         return
 
@@ -23,9 +23,9 @@ def collect_transaction():
         transaction_date = datetime.strptime(date_text, "%Y-%m-%d").date()
 
     except ValueError:
-        status_label.config(
+        status_label.configure(
             text="Enter a valid date in YYYY-MM-DD format.",
-            fg="#B42318"
+            text_color="#B42318"
         )
         return
 
@@ -46,13 +46,24 @@ def collect_transaction():
     save_transaction(transactions)
     refresh_history_table()
 
-    status_label.config(
+    status_label.configure(
         text="Transaction added.", 
-        fg="#287A55"
+        text_color="#287A55"
     )
 
-    balance = calculate_balance(transactions)
-    balance_label.configure(text=f"Available Balance: \u20b1{balance:.2f}")
+    total_balance = calculate_balance(transactions)
+    total_allowance = calculate_allowance(transactions)
+    total_expenses = calculate_expenses(transactions)
+
+    balance_label.configure(
+        text=f"\u20b1{total_balance:.2f}"
+    )
+    allowance_label.configure(
+        text=f"\u20b1{total_allowance:.2f}"
+    )
+    expenses_label.configure(
+        text=f"\u20b1{total_expenses:.2f}"
+    )
 
     amount_entry.delete(0, tk.END)
     description_entry.delete(0, tk.END)
@@ -77,13 +88,13 @@ def refresh_history_table():
 # GUI
 root = ctk.CTk()
 root.title("Personal Expense Tracker")
-root.geometry("1000x750")
-root.resizable(False, False)
+root.geometry("1200x750")
+root.resizable(True, True)
 root.configure(fg_color="#F3F6F4")
 
 transactions = load_transaction()
 
-# Static Tab / Header
+# Program Name/"Expense" header
 heading = ctk.CTkLabel(
     root,
     text="EXpnse",
@@ -92,32 +103,111 @@ heading = ctk.CTkLabel(
 )
 heading.pack(pady=(28, 12))
 
-balance_label = ctk.CTkLabel(
-    root,
-    text=f"Available Balance: \u20b1{calculate_balance(transactions):.2f}",
-    font=("Arial", 16, "bold"),
-    text_color="#287A55",
+#Summary Part j ngato, agitay total t balance, allowance, kn expenses.
+summary_row = ctk.CTkFrame(root, fg_color="transparent")
+summary_row.pack(fill="x", padx=24, pady=12)
+summary_row.grid_columnconfigure((0, 1, 2), weight=1)
+
+balance_card = ctk.CTkFrame(            
+    summary_row,
+    fg_color="#356B50",
+    corner_radius=12,
 )
-balance_label.pack(pady=12)
+allowance_card = ctk.CTkFrame(
+    summary_row, 
+    fg_color="#FFFFFF",                             
+    corner_radius=12
+    )
+expenses_card = ctk.CTkFrame(
+    summary_row, 
+    fg_color="#FFFFFF", 
+    corner_radius=12
+    )
 
-# NoteBooks
-style = ttk.Style()
-style.configure("TNotebook.Tab", padding=(16, 8))
+balance_title = ctk.CTkLabel(
+    balance_card,
+    text="Available balance",
+    font=("Arial", 12),
+    text_color="#FFFFFF",
+)
+allowance_title = ctk.CTkLabel(
+    allowance_card,
+    text="Total allowance",
+    font=("Arial", 12),
+    text_color="#23352D",
+)
+expenses_title = ctk.CTkLabel(
+    expenses_card,
+    text="Total expenses",
+    font=("Arial",12),
+    text_color="#23352D",
+)
 
-notebook = ttk.Notebook(root)
-notebook.pack(fill="both", expand=True, padx=24, pady=12)
+balance_label = ctk.CTkLabel(
+    balance_card,
+    text=f"\u20b1{calculate_balance(transactions):.2f}",
+    font=("Arial", 22),
+    text_color="#FFFFFF",
+)
+allowance_label = ctk.CTkLabel(
+    allowance_card,
+    text=f"\u20b1{calculate_allowance(transactions):.2f}",
+    font=("Arial", 22),
+    text_color="#23352D",
+)
+expenses_label = ctk.CTkLabel(
+    expenses_card,
+    text=f"\u20b1{calculate_expenses(transactions):.2f}",
+    font=("Arial", 22),
+    text_color="#23352D",
+)
 
-add_tab = tk.Frame(notebook, bg="#F3F6F4")
-history_tab = tk.Frame(notebook, bg="#F3F6F4")
+balance_title.pack(anchor="w", padx=20, pady=(16, 0))
+allowance_title.pack(anchor="w", padx=20, pady=(16, 0))
+expenses_title.pack(anchor="w", padx=20, pady=(16, 0))
 
-notebook.add(add_tab, text="Add Transaction")
-notebook.add(history_tab, text="History")
+balance_card.grid(row=0, column=0, sticky="ew", padx=(0, 6))
+allowance_card.grid(row=0, column=1, sticky="ew", padx=6)
+expenses_card.grid(row=0, column=2, sticky="ew", padx=(6, 0))
 
-# Add Transaction Tab
-style.configure("Padded.TEntry", padding=6)
+balance_label.pack(anchor="w", padx=20, pady=(4, 16))
+allowance_label.pack(anchor="w", padx=20, pady=(4, 16))
+expenses_label.pack(anchor="w", padx=20, pady=(4, 16))
+
+# Side-by-side dashboard panels
+dashboard = ctk.CTkFrame(root, fg_color="transparent")
+dashboard.pack(fill="both", expand=True, padx=24, pady=12)
+
+dashboard.grid_columnconfigure(0, weight=3)
+dashboard.grid_columnconfigure(1, weight=2)
+dashboard.grid_rowconfigure(0, weight=1)
+
+history_panel = ctk.CTkFrame(
+    dashboard,
+    fg_color="#FFFFFF",
+    corner_radius=12,
+)
+history_panel.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
+
+transaction_panel = ctk.CTkFrame(
+    dashboard,
+    fg_color="#FFFFFF",
+    corner_radius=12,
+)
+transaction_panel.grid(row=0, column=1, sticky="nsew", padx=(8, 0))
+
+
+# New Transaction Tab
+transaction_title = ctk.CTkLabel(
+    transaction_panel,
+    text="New transaction",
+    font=("Arial", 18, "bold"),
+    text_color="#23352D",
+)
+transaction_title.pack(anchor="w", padx=20, pady=(20, 4))
 
 form = ctk.CTkFrame(                                            # Form Tab
-    add_tab,
+    transaction_panel,
     fg_color="#FFFFFF",
     corner_radius=12,
 )
@@ -192,23 +282,50 @@ add_button = ctk.CTkButton(
 )
 add_button.grid(row=4, column=0, columnspan=2, pady=(16, 4))
 
-status_label = tk.Label(
+status_label = ctk.CTkLabel(
     form,
     text="",
     font=("Arial", 10),
-    bg="#FFFFFF",
+    text_color="#23352D",
 )
 status_label.grid(row=5, column=0, columnspan=2, pady=(4, 0))
 
 # Transaction History 
-history_frame = tk.Frame(history_tab, bg="#F3F6F4")
-history_frame.pack(padx=24, pady=12, fill="both", expand=True)
+history_title = ctk.CTkLabel(
+    history_panel,
+    text="Transaction history",
+    font=("Arial", 18, "bold"),
+    text_color="#23352D",
+)
+history_title.pack(anchor="w", padx=20, pady=(20, 4))
+
+history_frame = tk.Frame(history_panel, bg="#FFFFFF")
+history_frame.pack(padx=12, pady=12, fill="both", expand=True)
+
+table_style = ttk.Style()
+table_style.theme_use("clam")
+table_style.configure(
+    "Expense.Treeview",
+    background="#FFFFFF",
+    foreground="#23352D",
+    fieldbackground="#FFFFFF",
+    rowheight=36,
+    font=("Arial", 10),
+)
+table_style.configure(
+    "Expense.Treeview.Heading",
+    background="#F3F6F4",
+    foreground="#23352D",
+    font=("Arial", 10, "bold"),
+    relief="flat",
+)
 
 history_table = ttk.Treeview(
     history_frame,
     columns=("date", "type", "description", "amount"),
     show="headings",
     height=8,
+    style="Expense.Treeview",
 )
 
 history_table.heading("date", text="Date")

@@ -41,7 +41,7 @@ def save_transaction(transactions): # load_transaction() either gives [] or tran
     with open(JSON_PATH, "w", encoding="utf-8") as file:
         json.dump(transactions, file, indent=4)
 
-def calculate_balance(transactions): # load_transaction() either gives [] or transactions
+def calculate_total(transactions): # load_transaction() either gives [] or transactions
     allowance = sum(
         item["amount"] for item in transactions
         if item["type"].lower() == "allowance"
@@ -51,9 +51,20 @@ def calculate_balance(transactions): # load_transaction() either gives [] or tra
         if item["type"].lower() == "expense"
     )
     
-    return allowance - expenses
+    return {
+        "allowance": allowance,
+        "expenses": expenses,
+        "balance": allowance - expenses,
+    }
 
+def calculate_balance(transactions):
+    return calculate_total(transactions)["balance"]
 
+def calculate_allowance(transactions):
+    return calculate_total(transactions)["allowance"]
+
+def calculate_expenses(transactions):
+    return calculate_total(transactions)["expenses"]
     
 
 
