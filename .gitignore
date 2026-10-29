@@ -10,3 +10,4 @@ data/
 *.csv
 *data.json
 .vscode/
+/test_subject/
