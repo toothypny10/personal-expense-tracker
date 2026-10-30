@@ -20,13 +20,20 @@ class ExpenseTrackerApp(ctk.CTk):
         self.refresh_history_table()
         
     def create_heading(self):
-        self.heading = ctk.CTkLabel(
+        heading = ctk.CTkLabel(
             self,
-            text="EXpnse",
-            font=("Arial", 18, "bold"),
+            text="A little clarity for your money.",
+            font=("Nunito Sans", 20, "bold"),
             text_color="#23352D",
         )
-        self.heading.pack(pady=(28, 12))
+        heading_p = ctk.CTkLabel(
+            self,
+            text="Your allowance, everyday expenses, and everything in between.",
+            font=("Nunito Sans", 11),
+            text_color="#23352D",
+        )
+        heading.pack(anchor="w", padx=24, pady=(28,0))
+        heading_p.pack(anchor="w", padx=24)
 
     def create_summary_row(self):
         summary_row = ctk.CTkFrame(self, fg_color="transparent")
@@ -291,7 +298,6 @@ class ExpenseTrackerApp(ctk.CTk):
         self.history_table.pack(side="left", fill="both", expand=True)
         history_scrollbar.pack(side="right", fill="y")
 
-
     def collect_transaction(self):
         amount_text = self.amount_entry.get().strip()
         try:
@@ -316,9 +322,9 @@ class ExpenseTrackerApp(ctk.CTk):
             )
             return
     
-        transactions = load_transaction()
+        
     
-        existing_id = [item["id"] for item in transactions]
+        existing_id = [item["id"] for item in self.transactions]
         next_id = max(existing_id, default=0) + 1
         
         transaction = {
@@ -329,8 +335,8 @@ class ExpenseTrackerApp(ctk.CTk):
             "id": next_id,
         }
     
-        transactions.append(transaction)
-        save_transaction(transactions)
+        self.transactions.append(transaction)
+        save_transaction(self.transactions)
         self.refresh_history_table()
     
         self.status_label.configure(
@@ -338,9 +344,9 @@ class ExpenseTrackerApp(ctk.CTk):
             text_color="#287A55"
         )
     
-        total_balance = calculate_balance(transactions)
-        total_allowance = calculate_allowance(transactions)
-        total_expenses = calculate_expenses(transactions)
+        total_balance = calculate_balance(self.transactions)
+        total_allowance = calculate_allowance(self.transactions)
+        total_expenses = calculate_expenses(self.transactions)
     
         self.balance_label.configure(
             text=f"\u20b1{total_balance:.2f}"
@@ -359,7 +365,7 @@ class ExpenseTrackerApp(ctk.CTk):
         for row_id in self.history_table.get_children():
             self.history_table.delete(row_id)
         
-        for transaction in load_transaction():
+        for transaction in self.transactions:
             self.history_table.insert(
                 "",
                 tk.END,
