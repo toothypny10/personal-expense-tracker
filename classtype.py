@@ -1,7 +1,7 @@
 import customtkinter as ctk
 import tkinter as tk
 from tkinter import ttk
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import math
 from main import load_transaction, save_transaction, calculate_balance, calculate_allowance, calculate_expenses
 
@@ -247,6 +247,7 @@ class ExpenseTrackerApp(ctk.CTk):
         text_color="#23352D",
         )
         history_title.pack(anchor="w", padx=35, pady=(20, 4))
+        self.history_table_buttons(history_panel)
 
         history_frame = tk.Frame(history_panel, bg="#FFFFFF")
         history_frame.pack(padx=20, pady=20, fill="both", expand=True)
@@ -297,6 +298,19 @@ class ExpenseTrackerApp(ctk.CTk):
 
         self.history_table.pack(side="left", fill="both", expand=True)
         history_scrollbar.pack(side="right", fill="y")
+
+        
+
+    def history_table_buttons(self, history_panel):
+        self.history_range_var = tk.StringVar(value="Past 7 days")
+
+        range_selector = ctk.CTkSegmentedButton(
+            history_panel,
+            values=["Past 7 days", "Past 2 weeks", "1 month", "3 months", "6 months"],
+            variable=self.history_range_var,
+            command=lambda selected: self.refresh_history_table(),
+        )
+        range_selector.pack(anchor="w", padx=20, pady=10)
 
     def collect_transaction(self):
         amount_text = self.amount_entry.get().strip()
@@ -364,18 +378,38 @@ class ExpenseTrackerApp(ctk.CTk):
     def refresh_history_table(self):
         for row_id in self.history_table.get_children():
             self.history_table.delete(row_id)
-        
+
+        day_ranges = {
+            "Past 7 days": 7,
+            "2 weeks": 14,
+            "1 month": 30,
+            "3 months": 90,
+            "6 months": 180,
+        }
+
+        today = date.today()
+        days = day_ranges[self.history_range_var.get()]
+        first_date = today - timedelta(days=days - 1)
+
         for transaction in self.transactions:
-            self.history_table.insert(
-                "",
-                tk.END,
-                values=(
-                    transaction["date"],
-                    transaction["type"],
-                    transaction["description"],
-                    f"\u20b1{transaction['amount']:.2f}",
-                ),
-            )
+            try:
+                transaction_date = datetime.strptime(
+                    transaction["date"], "%Y-%m-%d"
+                ).date()
+            except (KeyError, TypeError, ValueError):
+                continue
+
+            if first_date <= transaction_date <= today:
+                self.history_table.insert(
+                    "",
+                    tk.END,
+                    values=(
+                        transaction["date"],
+                        transaction["type"],
+                        transaction["description"],
+                        f"\u20b1{transaction['amount']:.2f}",
+                    ),
+                )
 
 if __name__ == "__main__":
     app = ExpenseTrackerApp()
